@@ -4,6 +4,7 @@ mod size;
 mod entity;
 mod point;
 mod app;
+mod drawing;
 
 extern crate piston;
 extern crate graphics;
@@ -22,14 +23,19 @@ use world::*;
 
 fn main() {
     let mut world = World::new();
-    world.size.height = 50;
-    world.size.width = 50;
+    world.hero_speed = 10;
+    world.size.height = 300;
+    world.size.width = 300;
+    world.hero.1.size.height = 20;
+    world.hero.1.size.width = 20;
+    world.hero.0.x = 0;
+    world.hero.0.y = 0;
 
     let opengl = OpenGL::V3_2;
 
     let mut window: Window = WindowSettings::new(
-            "spinning-square",
-            [world.size.height, world.size.width]
+            "Asteroids",
+            [world.size.width, world.size.height]
         )
         .opengl(opengl)
         .exit_on_esc(true)
