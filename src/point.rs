@@ -3,8 +3,8 @@ use size::Size;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct Point {
-    pub x: u64,
-    pub y: u64,
+    pub x: u32,
+    pub y: u32,
 }
 
 pub trait RangeInclusion<T> {

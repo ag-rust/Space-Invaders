@@ -14,17 +14,19 @@ pub struct PositionAndSize {
 }
 
 impl PositionAndSize {
-    pub fn hit_test(&self, other: &PositionAndSize) -> bool {
-      for corner in self.corners() {
-          if corner.overlaps_with(&other.position, &other.size) {
-              return true
-          }
-      }
-
-      false
+    pub fn collides_with(&self, other: &PositionAndSize) -> bool {
+        self.corners().into_iter().any(|point| {
+          point.overlaps_with(&other.position, &other.size)
+        })
     }
 
-    fn corners(&self) -> Vec<Point> {
+    pub fn fully_contained_in(&self, other: &PositionAndSize) -> bool {
+        self.corners().into_iter().all(|point| {
+          point.overlaps_with(&other.position, &other.size)
+        })
+    }
+
+    pub fn corners(&self) -> Vec<Point> {
       let mut corners: Vec<Point> = vec![];
       corners.push(self.left_top());
       corners.push(self.right_top());
