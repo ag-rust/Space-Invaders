@@ -1,3 +1,9 @@
+extern crate rand;
+extern crate piston;
+extern crate graphics;
+extern crate glutin_window;
+extern crate opengl_graphics;
+
 mod world;
 mod color;
 mod size;
@@ -5,11 +11,6 @@ mod entity;
 mod point;
 mod app;
 mod drawing;
-
-extern crate piston;
-extern crate graphics;
-extern crate glutin_window;
-extern crate opengl_graphics;
 
 use color::*;
 use app::*;
@@ -21,6 +22,7 @@ use piston::window::WindowSettings;
 use std::collections::HashMap;
 use opengl_graphics::glyph_cache::GlyphCache;
 use world::*;
+use size::*;
 use std::path::Path;
 
 fn main() {
@@ -32,6 +34,11 @@ fn main() {
     world.hero.1.size.width = 20;
     world.hero.0.x = 0;
     world.hero.0.y = 0;
+    world.number_of_enemies = 10;
+    world.enemy_size = Size { height: 10, width: 10 };
+    world.starting_safe_zone_around_hero_size = world.hero_speed * 2;
+
+    world.populate_with_enemies();
 
     let opengl = OpenGL::V3_2;
 

@@ -6,6 +6,7 @@ use piston::input::*;
 use std::sync::Arc;
 use entity::Entity;
 use drawing::Drawable;
+use point::Point;
 use opengl_graphics::glyph_cache::GlyphCache;
 
 pub struct App<'a> {
@@ -17,17 +18,27 @@ pub struct App<'a> {
 
 impl<'a> App<'a> {
     pub fn render(&mut self, args: &RenderArgs) {
+        if self.world.dead() {
+            panic!("dead");
+        }
+
         self.render_calls += 1;
 
         let world = &self.world;
         let fps = self.fps();
         let mut glyph_cache = &mut self.glyph_cache;
+        // let enemies = self.world.enemies.into_iter().map(|p| p).collect::<Vec<(Point, Entity)>>();
+        let enemies = &self.world.enemies;
 
         self.gl.draw(args.viewport(), |c, gl| {
             clear(Color::white().to_array(), gl);
 
             world.hero.draw_shape(world.size, &c, gl);
             fps.draw_text(world.size, &mut glyph_cache, &c, gl);
+
+            for (position, enemy) in enemies {
+                (position.clone(), enemy.clone()).draw_shape(world.size, &c, gl);
+            }
         });
     }
 
@@ -42,7 +53,10 @@ impl<'a> App<'a> {
         }
     }
 
-    pub fn update(&mut self, args: &UpdateArgs) {}
+    pub fn update(&mut self, args: &UpdateArgs) {
+        self.world.move_enemies();
+    }
+
     pub fn move_it(&mut self, args: &Motion) {}
     pub fn after_render(&mut self, args: &AfterRenderArgs) {}
     pub fn close(&mut self, args: &CloseArgs) {}

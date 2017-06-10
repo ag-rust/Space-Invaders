@@ -2,7 +2,7 @@ use color::Color;
 use size::Size;
 use point::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Entity {
     pub size: Size,
     pub color: Color,
