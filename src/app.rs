@@ -6,19 +6,28 @@ use piston::input::*;
 use std::sync::Arc;
 use entity::Entity;
 use drawing::Drawable;
+use opengl_graphics::glyph_cache::GlyphCache;
 
-pub struct App {
+pub struct App<'a> {
     pub gl: GlGraphics,
-    pub world: World
+    pub world: World,
+    pub render_calls: u64,
+    pub glyph_cache: GlyphCache<'a>,
 }
 
-impl App {
+impl<'a> App<'a> {
     pub fn render(&mut self, args: &RenderArgs) {
+        self.render_calls += 1;
+
         let world = &self.world;
+        let fps = self.fps();
+        let mut glyph_cache = &mut self.glyph_cache;
+
         self.gl.draw(args.viewport(), |c, gl| {
             clear(Color::white().to_array(), gl);
 
-            world.hero.draw(&c, gl);
+            world.hero.draw_shape(world.size, &c, gl);
+            fps.draw_text(world.size, &mut glyph_cache, &c, gl);
         });
     }
 
@@ -45,4 +54,15 @@ impl App {
     pub fn text(&mut self, args: &String) {}
 
     // NOTE: Input::Custom is not handled
+
+    fn fps(&self) -> FrameRate {
+        let time = self.world.start_time.elapsed().as_secs();
+        if time == 0 { return FrameRate { fps: 0 } }
+        let fps = self.render_calls / self.world.start_time.elapsed().as_secs();
+        FrameRate { fps: fps }
+    }
+}
+
+pub struct FrameRate {
+    pub fps: u64,
 }

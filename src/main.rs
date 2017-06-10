@@ -19,7 +19,9 @@ use piston::event_loop::*;
 use piston::input::*;
 use piston::window::WindowSettings;
 use std::collections::HashMap;
+use opengl_graphics::glyph_cache::GlyphCache;
 use world::*;
+use std::path::Path;
 
 fn main() {
     let mut world = World::new();
@@ -33,6 +35,9 @@ fn main() {
 
     let opengl = OpenGL::V3_2;
 
+    let font_path = Path::new("./assets/InputMono-Regular.ttf");
+    let mut glyph_cache = GlyphCache::new(font_path).unwrap();
+
     let mut window: Window = WindowSettings::new(
             "Asteroids",
             [world.size.width, world.size.height]
@@ -45,6 +50,8 @@ fn main() {
     let mut app = App {
         gl: GlGraphics::new(opengl),
         world: world,
+        render_calls: 0,
+        glyph_cache: glyph_cache,
     };
 
     let mut event_stream = Events::new(EventSettings::new());
