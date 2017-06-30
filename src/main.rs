@@ -11,9 +11,11 @@ mod entity;
 mod point;
 mod app;
 mod drawing;
+mod config;
 
 use color::*;
 use app::*;
+use config::*;
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{ GlGraphics, OpenGL };
 use piston::event_loop::*;
@@ -26,28 +28,20 @@ use size::*;
 use std::path::Path;
 
 fn main() {
-    let mut world = World::new();
-    world.hero_speed = 10;
-    world.size.height = 300;
-    world.size.width = 300;
-    world.hero.1.size.height = 20;
-    world.hero.1.size.width = 20;
-    world.hero.0.x = 0;
-    world.hero.0.y = 0;
-    world.number_of_enemies = 10;
-    world.enemy_size = Size { height: 10, width: 10 };
-    world.starting_safe_zone_around_hero_size = world.hero_speed * 2;
+    let config = Config::default();
+
+    let mut world = World::new(config);
 
     world.populate_with_enemies();
 
     let opengl = OpenGL::V3_2;
 
     let font_path = Path::new("./assets/InputMono-Regular.ttf");
-    let mut glyph_cache = GlyphCache::new(font_path).unwrap();
+    let glyph_cache = GlyphCache::new(font_path).unwrap();
 
     let mut window: Window = WindowSettings::new(
             "Asteroids",
-            [world.size.width, world.size.height]
+            [world.config.world_size.width, world.config.world_size.height]
         )
         .opengl(opengl)
         .exit_on_esc(true)

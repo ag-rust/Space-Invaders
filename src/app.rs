@@ -27,17 +27,16 @@ impl<'a> App<'a> {
         let world = &self.world;
         let fps = self.fps();
         let mut glyph_cache = &mut self.glyph_cache;
-        // let enemies = self.world.enemies.into_iter().map(|p| p).collect::<Vec<(Point, Entity)>>();
         let enemies = &self.world.enemies;
 
         self.gl.draw(args.viewport(), |c, gl| {
             clear(Color::white().to_array(), gl);
 
-            world.hero.draw_shape(world.size, &c, gl);
-            fps.draw_text(world.size, &mut glyph_cache, &c, gl);
+            world.hero.draw_shape(world.config.world_size, &c, gl);
+            fps.draw_text(world.config.world_size, &mut glyph_cache, &c, gl);
 
             for (position, enemy) in enemies {
-                (position.clone(), enemy.clone()).draw_shape(world.size, &c, gl);
+                (position.clone(), enemy.clone()).draw_shape(world.config.world_size, &c, gl);
             }
         });
     }
