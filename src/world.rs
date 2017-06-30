@@ -6,7 +6,9 @@ use size::Size;
 use entity::*;
 use point::*;
 use config::*;
+use score::*;
 use rand::*;
+use default;
 use std::time::{Instant};
 use rand::distributions::{IndependentSample, Range};
 
@@ -17,6 +19,7 @@ pub struct World {
     pub alive: bool,
     pub rng: ThreadRng,
     pub config: Config,
+    pub score: Score,
 }
 
 // Initialization
@@ -34,6 +37,7 @@ impl World {
             alive: true,
             rng: rand::thread_rng(),
             config: config,
+            score: default::default(),
         };
 
         world

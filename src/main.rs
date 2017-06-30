@@ -9,6 +9,8 @@ mod color;
 mod size;
 mod entity;
 mod point;
+mod score;
+mod default;
 mod app;
 mod drawing;
 mod config;
