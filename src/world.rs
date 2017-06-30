@@ -23,7 +23,7 @@ pub struct World {
 impl World {
     pub fn new(config: Config) -> World {
         let hero = Entity {
-            color: Color::green(),
+            color: config.hero_color,
             size: config.hero_size,
         };
 
@@ -59,8 +59,11 @@ impl World {
 
         for _ in (1..self.config.number_of_enemies + 1) {
             let enemy = Entity {
-                size: Size { height: self.config.enemy_size.height, width: self.config.enemy_size.width },
-                color: Color::red(),
+                size: Size {
+                    height: self.config.enemy_size.height,
+                    width: self.config.enemy_size.width
+                },
+                color: self.config.enemy_color,
             };
 
             let mut x = x_range.ind_sample(&mut self.rng);

@@ -30,7 +30,7 @@ impl<'a> App<'a> {
         let enemies = &self.world.enemies;
 
         self.gl.draw(args.viewport(), |c, gl| {
-            clear(Color::white().to_array(), gl);
+            clear(world.config.world_background_color.to_array(), gl);
 
             world.hero.draw_shape(world.config.world_size, &c, gl);
             fps.draw_text(world.config.world_size, &mut glyph_cache, &c, gl);
