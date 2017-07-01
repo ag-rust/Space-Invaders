@@ -8,6 +8,7 @@ use point::*;
 use config::*;
 use score::*;
 use rand::*;
+use game_state::*;
 use default;
 use std::time::{Instant};
 use rand::distributions::{IndependentSample, Range};
@@ -16,10 +17,10 @@ pub struct World {
     pub hero: (Point, Entity),
     pub enemies: HashMap<Point, Entity>,
     pub start_time: Instant,
-    pub alive: bool,
     pub rng: ThreadRng,
     pub config: Config,
     pub score: Score,
+    pub game_state: GameState,
 }
 
 // Initialization
@@ -32,15 +33,20 @@ impl World {
 
         let world = World {
             hero: (config.hero_starting_position, hero),
-            enemies: HashMap::new(),
+            enemies: default::default(),
             start_time: Instant::now(),
-            alive: true,
             rng: rand::thread_rng(),
             config: config,
             score: default::default(),
+            game_state: default::default(),
         };
 
         world
+    }
+
+    pub fn start(&mut self) {
+        self.populate_with_enemies();
+        self.game_state = GameState::Playing;
     }
 
     pub fn add_enemy_at(&mut self, position: Point, enemy: Entity) {
@@ -48,6 +54,10 @@ impl World {
     }
 
     pub fn populate_with_enemies(&mut self) {
+        self.hero.0 = self.config.hero_starting_position;
+        self.enemies = default::default();
+        self.score = default::default();
+
         let mut x_range = Range::new(
             0,
             self.config.world_size.width - self.config.enemy_size.width + 1);
@@ -130,7 +140,7 @@ impl World {
     }
 
     pub fn check_if_still_alive(&mut self) {
-        if !self.alive { return };
+        if self.dead() { return };
 
         let h = PositionAndSize {
             position: self.hero.0,
@@ -144,13 +154,19 @@ impl World {
             };
 
             if h.collides_with(&p) || p.collides_with(&h) {
-                self.alive = false;
+                self.game_state = GameState::Dead;
                 return;
             }
         }
     }
 
-    pub fn dead(&self) -> bool { !self.alive }
+    pub fn dead(&self) -> bool {
+        match self.game_state {
+            GameState::Dead => true,
+            _ => false,
+        }
+    }
+    pub fn alive(&self) -> bool { !self.dead() }
 
     pub fn move_enemies(&mut self) {
         self.check_if_still_alive();

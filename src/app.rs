@@ -1,4 +1,5 @@
 use graphics::*;
+use game_state::*;
 use world::*;
 use color::*;
 use opengl_graphics::{GlGraphics};
@@ -7,6 +8,7 @@ use std::sync::Arc;
 use entity::Entity;
 use drawing::Drawable;
 use point::Point;
+use intro_text::*;
 use opengl_graphics::glyph_cache::GlyphCache;
 
 pub struct App<'a> {
@@ -18,10 +20,6 @@ pub struct App<'a> {
 
 impl<'a> App<'a> {
     pub fn render(&mut self, args: &RenderArgs) {
-        if self.world.dead() {
-            panic!("dead");
-        }
-
         self.render_calls += 1;
 
         let world = &self.world;
@@ -32,23 +30,46 @@ impl<'a> App<'a> {
         self.gl.draw(args.viewport(), |c, gl| {
             clear(world.config.world_background_color.to_array(), gl);
 
-            world.hero.draw_shape(world.config.world_size, &c, gl);
-            fps.draw_text(world.config.world_size, &mut glyph_cache, &c, gl);
-
-            for (position, enemy) in enemies {
-                (position.clone(), enemy.clone()).draw_shape(world.config.world_size, &c, gl);
+            match world.game_state {
+                GameState::Intro => {
+                    let intro_text = IntroText::new("Welcome, press any button to start");
+                    intro_text.draw_text(world.config.world_size, &mut glyph_cache, &c, gl);
+                },
+                GameState::Playing => {
+                    world.hero.draw_shape(world.config.world_size, &c, gl);
+                    for (position, enemy) in enemies {
+                        (position.clone(), enemy.clone()).draw_shape(world.config.world_size, &c, gl);
+                    }
+                    world.score.draw_text(world.config.world_size, &mut glyph_cache, &c, gl);
+                },
+                GameState::Dead => {
+                    let intro_text = IntroText::new("You died, press any button to start again");
+                    intro_text.draw_text(world.config.world_size, &mut glyph_cache, &c, gl);
+                },
             }
+
+            fps.draw_text(world.config.world_size, &mut glyph_cache, &c, gl);
         });
     }
 
 
     pub fn press(&mut self, args: &Button) {
-        match args {
-            &Button::Keyboard(Key::Right) => self.world.move_right(),
-            &Button::Keyboard(Key::Left) => self.world.move_left(),
-            &Button::Keyboard(Key::Up) => self.world.move_up(),
-            &Button::Keyboard(Key::Down) => self.world.move_down(),
-            _ => {},
+        match self.world.game_state {
+            GameState::Intro => {
+                self.world.start();
+            },
+            GameState::Playing => {
+                match args {
+                    &Button::Keyboard(Key::Right) => self.world.move_right(),
+                    &Button::Keyboard(Key::Left) => self.world.move_left(),
+                    &Button::Keyboard(Key::Up) => self.world.move_up(),
+                    &Button::Keyboard(Key::Down) => self.world.move_down(),
+                    _ => {},
+                }
+            },
+            GameState::Dead => {
+                self.world.start();
+            },
         }
     }
 

@@ -1,6 +1,7 @@
 use size::*;
 use point::*;
 use color::*;
+use utils::*;
 
 pub struct Config {
     pub enemy_size: Size,
@@ -38,15 +39,5 @@ impl Config {
         c.hero_starting_position.y = 75.percent_of(c.world_size.height);
 
         c
-    }
-}
-
-trait PercentageCalculation<T> {
-    fn percent_of(self, T) -> T;
-}
-
-impl PercentageCalculation<u32> for u32 {
-    fn percent_of(self, x: Self) -> Self {
-        (x as f32 * (self as f32 / 100.0)) as u32
     }
 }

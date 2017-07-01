@@ -41,7 +41,7 @@ impl Drawable for FrameRate {
         let font_size = 10;
 
         let text = text::Text {
-            color: Color::black().to_array(),
+            color: Color::white().to_array(),
             font_size: font_size,
             round: true,
         };

@@ -12,6 +12,9 @@ mod point;
 mod score;
 mod default;
 mod app;
+mod utils;
+mod intro_text;
+mod game_state;
 mod drawing;
 mod config;
 
@@ -33,8 +36,6 @@ fn main() {
     let config = Config::default();
 
     let mut world = World::new(config);
-
-    world.populate_with_enemies();
 
     let opengl = OpenGL::V3_2;
 
