@@ -45,7 +45,12 @@ impl World {
     }
 
     pub fn start(&mut self) {
+        self.hero.0 = self.config.hero_starting_position;
+        self.enemies = default::default();
+        self.score = default::default();
+
         self.populate_with_enemies();
+
         self.game_state = GameState::Playing;
     }
 
@@ -54,10 +59,6 @@ impl World {
     }
 
     pub fn populate_with_enemies(&mut self) {
-        self.hero.0 = self.config.hero_starting_position;
-        self.enemies = default::default();
-        self.score = default::default();
-
         let mut x_range = Range::new(
             0,
             self.config.world_size.width - self.config.enemy_size.width + 1);
