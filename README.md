@@ -6,8 +6,6 @@ The end goal:
 
 ## TODO
 
-- Place enemies on grid
-    - Build grid abstraction that distributes a number of values in a grid
 - Move enemies down and sideways every second
 - Add projectiles
     - Hit space bar to shoot projectile from hero
