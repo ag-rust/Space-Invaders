@@ -6,7 +6,6 @@ The end goal:
 
 ## TODO
 
-- Extract game state enum
 - Place enemies on grid
     - Build grid abstraction that distributes a number of values in a grid
 - Move enemies down and sideways every second
@@ -18,5 +17,8 @@ The end goal:
 - Scoring system
     - Add to score when you kill enemies
     - When you win, add to score depending on how quick you were
+      - Track when the game started and delta between now and then
+      - Show that score
+      - Keep track of high scores
 - Show message when you die
 - Show message when you win
