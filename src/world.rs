@@ -4,11 +4,13 @@ use std::collections::HashMap;
 use color::Color;
 use size::Size;
 use entity::*;
+use max_min::*;
 use point::*;
 use config::*;
 use score::*;
 use rand::*;
 use game_state::*;
+use grid_distribution::*;
 use default;
 use std::time::{Instant};
 use rand::distributions::{IndependentSample, Range};
@@ -59,20 +61,18 @@ impl World {
     }
 
     pub fn populate_with_enemies(&mut self) {
-        let mut x_range = Range::new(
-            0,
-            self.config.world_size.width - self.config.enemy_size.width + 1);
+        let grid_size = self.config.world_size - Size { height: 200, width: 40 };
+        let remaining_space = self.config.world_size.width - grid_size.width;
+        let padding_on_sides_of_grid = (remaining_space as f64 / 2.0) as u32;
 
-        let mut y_range = Range::new(
-            0,
-            self.config.world_size.height - self.config.enemy_size.height + 1);
+        let distribution = GridDistribution {
+            available_space: grid_size,
+            entity_size: self.config.enemy_size,
+            horizontal_padding: 10,
+            vertical_padding: 10,
+        }.distribute();
 
-        let h = PositionAndSize {
-            position: self.hero.0,
-            size: self.hero.1.size,
-        };
-
-        for _ in (1..self.config.number_of_enemies + 1) {
+        for point in distribution {
             let enemy = Entity {
                 size: Size {
                     height: self.config.enemy_size.height,
@@ -81,23 +81,10 @@ impl World {
                 color: self.config.enemy_color,
             };
 
-            let mut x = x_range.ind_sample(&mut self.rng);
-            let mut y = y_range.ind_sample(&mut self.rng);
-            let mut pos = Point { x: x, y: y };
-
-            let p = PositionAndSize {
-                position: pos,
-                size: enemy.size,
-            };
-
-            // make sure an enemy doesn't spawn on top of the hero
-            if h.collides_with(&p) || p.collides_with(&h) {
-                x += self.hero.1.size.width + self.config.starting_safe_zone_around_hero_size;
-                y += self.hero.1.size.height + self.config.starting_safe_zone_around_hero_size;
-                pos = Point { x: x, y: y };
-            }
-
-            self.add_enemy_at(pos, enemy);
+            self.add_enemy_at(
+                point + Point { x: padding_on_sides_of_grid, y: 20 },
+                enemy
+                );
         }
     }
 }
@@ -171,20 +158,5 @@ impl World {
 
     pub fn move_enemies(&mut self) {
         self.check_if_still_alive();
-    }
-}
-
-trait MaxMin<T> where T: PartialOrd + Copy {
-    fn max(&self) -> T;
-    fn min(&self) -> T;
-}
-
-impl<T> MaxMin<T> for (T, T) where T: PartialOrd + Copy {
-    fn max(&self) -> T {
-        if self.0 > self.1 { self.0 } else { self.1 }
-    }
-
-    fn min(&self) -> T {
-        if self.0 < self.1 { self.0 } else { self.1 }
     }
 }

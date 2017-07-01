@@ -1,4 +1,5 @@
 use std::ops::Range;
+use std::ops::Add;
 use size::Size;
 use default::*;
 
@@ -6,6 +7,13 @@ use default::*;
 pub struct Point {
     pub x: u32,
     pub y: u32,
+}
+
+impl Add for Point {
+    type Output = Point;
+    fn add(self, other: Point) -> Point {
+        Point { x: self.x + other.x, y: self.y + other.y }
+    }
 }
 
 pub trait RangeInclusion<T> {

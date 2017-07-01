@@ -17,6 +17,8 @@ mod intro_text;
 mod game_state;
 mod drawing;
 mod config;
+mod grid_distribution;
+mod max_min;
 
 use color::*;
 use app::*;
