@@ -10,6 +10,7 @@ use graphics::*;
 use app::{FrameRate};
 use opengl_graphics::{GlGraphics};
 
+#[derive(Copy, Clone)]
 pub struct Score {
     pub score: u32,
 }
@@ -18,8 +19,11 @@ impl Score {
     pub fn zero() -> Score {
         Score { score: 0 }
     }
+}
 
-    pub fn add(&self, other: Score) -> Score {
+impl Add for Score {
+    type Output = Score;
+    fn add(self, other: Score) -> Score {
         Score { score: self.score + other.score }
     }
 }

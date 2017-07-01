@@ -18,6 +18,7 @@ use rand::distributions::{IndependentSample, Range};
 pub struct World {
     pub hero: (Point, Entity),
     pub enemies: HashMap<Point, Entity>,
+    pub projectiles: HashMap<Point, Entity>,
     pub start_time: Instant,
     pub rng: ThreadRng,
     pub config: Config,
@@ -36,6 +37,7 @@ impl World {
         let world = World {
             hero: (config.hero_starting_position, hero),
             enemies: default::default(),
+            projectiles: default::default(),
             start_time: Instant::now(),
             rng: rand::thread_rng(),
             config: config,
@@ -63,7 +65,7 @@ impl World {
     pub fn populate_with_enemies(&mut self) {
         let grid_size = self.config.world_size - Size { height: 200, width: 40 };
         let remaining_space = self.config.world_size.width - grid_size.width;
-        let padding_on_sides_of_grid = (remaining_space as f64 / 2.0) as u32;
+        let padding_on_sides_of_grid = (remaining_space as f64 / 2.0) as i32;
 
         let distribution = GridDistribution {
             available_space: grid_size,
@@ -95,7 +97,7 @@ impl World {
         if !self.config.vertical_movement_allowed { return }
         let (current_pos, _) = self.hero;
         if current_pos.y <= 0 { return }
-        let new_pos = Point { y: current_pos.y - self.config.hero_speed, .. current_pos };
+        let new_pos = Point { y: current_pos.y - self.config.hero_speed as i32, .. current_pos };
         self.hero.0 = new_pos;
         self.check_if_still_alive();
     }
@@ -103,8 +105,8 @@ impl World {
     pub fn move_down(&mut self) {
         if !self.config.vertical_movement_allowed { return }
         let (current_pos, _) = self.hero;
-        if current_pos.y + self.hero.1.size.height >= self.config.world_size.height { return }
-        let new_pos = Point { y: current_pos.y + self.config.hero_speed, .. current_pos };
+        if current_pos.y + self.hero.1.size.height as i32 >= self.config.world_size.height as i32 { return }
+        let new_pos = Point { y: current_pos.y + self.config.hero_speed as i32, .. current_pos };
         self.hero.0 = new_pos;
         self.check_if_still_alive();
     }
@@ -113,7 +115,7 @@ impl World {
         if !self.config.horizontal_movement_allowed { return }
         let (current_pos, _) = self.hero;
         if current_pos.x <= 0 { return }
-        let new_pos = Point { x: current_pos.x - self.config.hero_speed , .. current_pos };
+        let new_pos = Point { x: current_pos.x - self.config.hero_speed as i32 , .. current_pos };
         self.hero.0 = new_pos;
         self.check_if_still_alive();
     }
@@ -121,8 +123,8 @@ impl World {
     pub fn move_right(&mut self) {
         if !self.config.horizontal_movement_allowed { return }
         let (current_pos, _) = self.hero;
-        if current_pos.x + self.hero.1.size.width >= self.config.world_size.width { return }
-        let new_pos = Point { x: current_pos.x + self.config.hero_speed , .. current_pos };
+        if current_pos.x + self.hero.1.size.width as i32 >= self.config.world_size.width as i32 { return }
+        let new_pos = Point { x: current_pos.x + self.config.hero_speed as i32 , .. current_pos };
         self.hero.0 = new_pos;
         self.check_if_still_alive();
     }
@@ -157,6 +159,81 @@ impl World {
     pub fn alive(&self) -> bool { !self.dead() }
 
     pub fn move_enemies(&mut self) {
-        self.check_if_still_alive();
+    }
+}
+
+// Shooting projectiles
+impl World {
+    pub fn shoot(&mut self) {
+        let projectile = Entity {
+            size: self.config.projectile_size,
+            color: self.config.projectile_color,
+        };
+
+        self.projectiles.insert(
+            Point {
+                x: self.hero.0.x + (self.hero.1.size.width as f64 / 2.0) as i32,
+                y: self.hero.0.y,
+            },
+            projectile,
+            );
+    }
+
+    pub fn move_projectiles(&mut self) {
+        let mut new_positions: HashMap<Point, Entity> = default::default();
+
+        for (point, projectile) in &self.projectiles {
+            new_positions.insert(
+                point.clone() + Point { x: 0, y: -1 * self.config.projectile_speed as i32 },
+                projectile.clone()
+                );
+        }
+
+        self.projectiles = new_positions;
+    }
+
+    pub fn check_for_projectile_enemy_collisions(&mut self) {
+        let mut enemies_to_remove: Vec<Point> = Vec::new();
+        let mut projectiles_to_remove: Vec<Point> = Vec::new();
+
+        for (projectile_point, projectile) in &self.projectiles {
+            if projectile_point.y <= 0 {
+                projectiles_to_remove.push(projectile_point.clone());
+                continue;
+            }
+
+            for (enemy_point, enemy) in &self.enemies {
+                let projectile_space = PositionAndSize {
+                    size: projectile.size,
+                    position: projectile_point.clone(),
+                };
+                let enemy_space = PositionAndSize {
+                    size: enemy.size,
+                    position: enemy_point.clone(),
+                };
+                if projectile_space.collides_with(&enemy_space) {
+                    enemies_to_remove.push(enemy_point.clone());
+                    projectiles_to_remove.push(projectile_point.clone());
+                }
+            }
+        }
+
+        for point in enemies_to_remove {
+            self.enemies.remove(&point);
+            self.killed_enemy_at(&point);
+        }
+        for point in projectiles_to_remove {
+            self.projectiles.remove(&point);
+        }
+    }
+
+    fn killed_enemy_at(&mut self, point: &Point) {
+        self.score = self.score + self.config.points_for_killing_enemy;
+    }
+
+    pub fn check_if_won(&mut self) {
+        if self.enemies.is_empty() {
+            self.game_state = GameState::Won;
+        }
     }
 }

@@ -41,7 +41,7 @@ impl PositionAndSize {
 
     fn right_top(&self) -> Point {
       Point {
-        x: self.position.x + self.size.width,
+        x: self.position.x + self.size.width as i32,
         y: self.position.y,
       }
     }
@@ -49,14 +49,14 @@ impl PositionAndSize {
     fn left_bottom(&self) -> Point {
       Point {
         x: self.position.x,
-        y: self.position.y + self.size.height,
+        y: self.position.y + self.size.height as i32,
       }
     }
 
     fn right_bottom(&self) -> Point {
       Point {
-        x: self.position.x + self.size.width,
-        y: self.position.y + self.size.height,
+        x: self.position.x + self.size.width as i32,
+        y: self.position.y + self.size.height as i32,
       }
     }
 }

@@ -7,13 +7,7 @@ The end goal:
 ## TODO
 
 - Move enemies down and sideways every second
-- Add projectiles
-    - Hit space bar to shoot projectile from hero
-    - If it hits an enemy that enemy dies
-        - The projectile and enemy disappears
-    - If all enemies are dead, you win
 - Scoring system
-    - Add to score when you kill enemies
     - When you win, add to score depending on how quick you were
       - Track when the game started and delta between now and then
       - Show that score

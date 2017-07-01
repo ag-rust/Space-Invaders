@@ -7,8 +7,8 @@ use color::*;
 pub struct GridDistribution {
     pub available_space: Size,
     pub entity_size: Size,
-    pub vertical_padding: i32,
-    pub horizontal_padding: i32,
+    pub vertical_padding: u32,
+    pub horizontal_padding: u32,
 }
 
 impl GridDistribution
@@ -19,15 +19,15 @@ impl GridDistribution
          */
 
         let count_horizontally = self.how_many_to_fill_space(
-            self.entity_size.width as i32,
+            self.entity_size.width,
             self.horizontal_padding,
-            self.available_space.width as i32,
+            self.available_space.width,
             );
 
         let count_vertically = self.how_many_to_fill_space(
-            self.entity_size.height as i32,
+            self.entity_size.height,
             self.vertical_padding,
-            self.available_space.height as i32,
+            self.available_space.height,
             );
 
         let mut grid: Vec<Point> = Vec::new();
@@ -35,28 +35,28 @@ impl GridDistribution
         let mut space_used_vertically = 0;
         let mut space_used_horizontally = 0;
 
-        for row in (0..count_vertically) {
-            for col in (0..count_horizontally) {
+        for row in 0..count_vertically {
+            for col in 0..count_horizontally {
                 let point = Point {
-                    x: space_used_horizontally,
-                    y: space_used_vertically,
+                    x: space_used_horizontally as i32,
+                    y: space_used_vertically as i32,
                 };
                 grid.push(point);
-                space_used_horizontally += self.entity_size.width + self.horizontal_padding as u32;
+                space_used_horizontally += self.entity_size.width + self.horizontal_padding;
             }
             space_used_horizontally = 0;
-            space_used_vertically += self.entity_size.height + self.vertical_padding as u32;
+            space_used_vertically += self.entity_size.height + self.vertical_padding;
         }
 
         grid
     }
 
-    fn how_many_to_fill_space(&self, size: i32, padding: i32, available_space: i32) -> u32 {
+    fn how_many_to_fill_space(&self, size: u32, padding: u32, available_space: u32) -> u32 {
         let mut count = 0;
 
         loop {
             let space_required = (size + padding) * count;
-            let remaining_space = available_space - space_required;
+            let remaining_space = (available_space as i32) - space_required as i32;
 
             if remaining_space >= 0 {
                 count += 1;

@@ -2,6 +2,7 @@ use size::*;
 use point::*;
 use color::*;
 use utils::*;
+use score::*;
 
 pub struct Config {
     pub enemy_size: Size,
@@ -16,12 +17,16 @@ pub struct Config {
     pub vertical_movement_allowed: bool,
     pub horizontal_movement_allowed: bool,
     pub world_background_color: Color,
+    pub projectile_size: Size,
+    pub projectile_color: Color,
+    pub projectile_speed: u32,
+    pub points_for_killing_enemy: Score,
 }
 
 impl Config {
     pub fn default() -> Config {
         let mut c = Config {
-            enemy_size: Size { height: 10, width: 10 },
+            enemy_size: Size { height: 13, width: 13 },
             enemy_color: Color::red(),
             hero_size: Size { height: 20, width: 20 },
             hero_starting_position: Point { x: 0, y: 0 },
@@ -33,6 +38,10 @@ impl Config {
             vertical_movement_allowed: false,
             horizontal_movement_allowed: true,
             world_background_color: Color::black(),
+            projectile_size: Size { height: 6, width: 3 },
+            projectile_color: Color::white(),
+            projectile_speed: 2,
+            points_for_killing_enemy: Score { score: 1 },
         };
 
         c.hero_starting_position.x = 0;

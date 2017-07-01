@@ -4,6 +4,7 @@ pub enum GameState {
     Intro,
     Playing,
     Dead,
+    Won,
 }
 
 impl Default for GameState {

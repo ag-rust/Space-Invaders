@@ -26,6 +26,7 @@ impl<'a> App<'a> {
         let fps = self.fps();
         let mut glyph_cache = &mut self.glyph_cache;
         let enemies = &self.world.enemies;
+        let projectiles = &self.world.projectiles;
 
         self.gl.draw(args.viewport(), |c, gl| {
             clear(world.config.world_background_color.to_array(), gl);
@@ -37,14 +38,19 @@ impl<'a> App<'a> {
                 },
                 GameState::Playing => {
                     world.hero.draw_shape(world.config.world_size, &c, gl);
-                    for (position, enemy) in enemies {
-                        (position.clone(), enemy.clone()).draw_shape(world.config.world_size, &c, gl);
+                    for &map in [enemies, projectiles].iter() {
+                        for (position, enemy) in map {
+                            (position.clone(), enemy.clone())
+                                .draw_shape(world.config.world_size, &c, gl);
+                        }
                     }
                     world.score.draw_text(world.config.world_size, &mut glyph_cache, &c, gl);
                 },
                 GameState::Dead => {
                     let intro_text = IntroText::new("You died, press any button to start again");
                     intro_text.draw_text(world.config.world_size, &mut glyph_cache, &c, gl);
+                },
+                GameState::Won => {
                 },
             }
 
@@ -64,17 +70,32 @@ impl<'a> App<'a> {
                     &Button::Keyboard(Key::Left) => self.world.move_left(),
                     &Button::Keyboard(Key::Up) => self.world.move_up(),
                     &Button::Keyboard(Key::Down) => self.world.move_down(),
+                    &Button::Keyboard(Key::Space) => self.world.shoot(),
                     _ => {},
                 }
             },
             GameState::Dead => {
                 self.world.start();
             },
+            GameState::Won => {
+                panic!("You won!");
+            },
         }
     }
 
     pub fn update(&mut self, args: &UpdateArgs) {
-        self.world.move_enemies();
+        match self.world.game_state {
+            GameState::Intro => {},
+            GameState::Playing => {
+                self.world.move_enemies();
+                self.world.move_projectiles();
+                self.world.check_for_projectile_enemy_collisions();
+                self.world.check_if_won();
+                self.world.check_if_still_alive();
+            },
+            GameState::Dead => {},
+            GameState::Won => {},
+        }
     }
 
     pub fn move_it(&mut self, args: &Motion) {}

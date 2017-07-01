@@ -5,8 +5,8 @@ use default::*;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct Point {
-    pub x: u32,
-    pub y: u32,
+    pub x: i32,
+    pub y: i32,
 }
 
 impl Add for Point {
@@ -34,8 +34,8 @@ impl Point {
     }
 
     pub fn overlaps_with(&self, point: &Point, size: &Size) -> bool {
-        (point.x..point.x+size.width+1).includes(self.x) &&
-            (point.y..point.y+size.height+1).includes(self.y)
+        (point.x..point.x + size.width as i32 + 1).includes(self.x) &&
+            (point.y..point.y + size.height as i32 + 1).includes(self.y)
     }
 }
 
