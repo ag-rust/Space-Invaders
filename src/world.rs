@@ -290,7 +290,7 @@ impl World {
                 x: 0,
                 y: match orientation {
                     Orientation::Up => -1 * self.config.projectile_speed as i32,
-                    Orientation::Down => self.config.projectile_speed as i32,
+                    Orientation::Down => self.config.enemy_projectile_speed as i32,
                 },
             };
 
@@ -305,7 +305,39 @@ impl World {
 
     pub fn enemy_shoot(&mut self) {
         if !self.time_for_enemy_to_shoot() { return };
+        let enemy_to_shoot = self.enemy_to_shoot();
+        let projectile = Entity {
+            size: self.config.projectile_size,
+            color: self.config.projectile_color,
+        };
+        self.projectiles.insert(
+            Point {
+                x: enemy_to_shoot.position.x + (enemy_to_shoot.size.width as f64 / 2.0) as i32,
+                y: enemy_to_shoot.position.y + enemy_to_shoot.size.height as i32 + 2,
+            },
+            (projectile, Orientation::Down),
+            );
         self.last_enemy_shot = Instant::now();
+    }
+
+    fn enemy_to_shoot(&self) -> PositionAndSize {
+        let mut lowest: Option<(Point, Entity)> = None;
+        for (p, e) in &self.enemies {
+            match lowest {
+                Option::None => lowest = Option::Some((p.clone(), e.clone())),
+                Option::Some(l) => {
+                    let prev_low_point = l.0.y + l.1.size.height as i32;
+                    let new_low_point = p.y + e.size.height as i32;
+                    if new_low_point > prev_low_point {
+                        lowest = Option::Some((p.clone(), e.clone()))
+                    }
+                }
+            }
+        }
+        PositionAndSize {
+            position: lowest.unwrap().0,
+            size: lowest.unwrap().1.size,
+        }
     }
 
     fn time_for_enemy_to_shoot(&self) -> bool {

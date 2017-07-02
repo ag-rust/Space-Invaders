@@ -31,6 +31,7 @@ pub struct Config {
     pub projectile_color: Color,
     pub projectile_speed: u32,
     pub points_for_killing_enemy: Score,
+    pub enemy_projectile_speed: u32,
 }
 
 impl Config {
@@ -42,7 +43,7 @@ impl Config {
             enemy_vertical_speed: 1,
             enemy_horizontal_padding: 15,
             enemy_vertical_padding: 15,
-            enemy_shoots_every: Duration::from_millis(1000),
+            enemy_shoots_every: Duration::from_millis(800),
             move_enemies_horizontally_every: Duration::from_millis(10),
             move_enemies_vertically_every: Duration::from_millis(300),
             time_between_shots: Duration::from_millis(250),
@@ -59,7 +60,8 @@ impl Config {
             world_background_color: Color::black(),
             projectile_size: Size { height: 6, width: 3 },
             projectile_color: Color::white(),
-            projectile_speed: 2,
+            projectile_speed: 3,
+            enemy_projectile_speed: 1,
             points_for_killing_enemy: Score { score: 1 },
         };
 
