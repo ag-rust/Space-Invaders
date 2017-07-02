@@ -1,4 +1,4 @@
-# Asteroids
+# Space Invaders
 
 The end goal:
 
