@@ -1,11 +1,8 @@
 extern crate rand;
 
 use std::collections::HashMap;
-use color::Color;
 use size::Size;
 use entity::*;
-use max_min::*;
-use std::time::Duration;
 use point::*;
 use config::*;
 use score::*;
@@ -15,16 +12,16 @@ use grid_distribution::*;
 use direction::*;
 use default;
 use std::time::{Instant};
-use rand::distributions::{IndependentSample, Range};
 
 pub struct World {
     pub hero: (Point, Entity),
     pub enemies: HashMap<Point, Entity>,
-    pub projectiles: HashMap<Point, Entity>,
+    pub projectiles: HashMap<Point, (Entity, Orientation)>,
     pub start_time: Instant,
     pub last_enemy_vertical_move: Instant,
     pub last_enemy_horizontal_move: Instant,
     pub last_shot: Instant,
+    pub last_enemy_shot: Instant,
     pub rng: ThreadRng,
     pub config: Config,
     pub score: Score,
@@ -49,6 +46,7 @@ impl World {
             last_enemy_horizontal_move: Instant::now(),
             last_enemy_vertical_move: Instant::now(),
             last_shot: Instant::now(),
+            last_enemy_shot: Instant::now(),
             rng: rand::thread_rng(),
             world_space: PositionAndSize {
                 size: config.world_size.clone(),
@@ -151,16 +149,8 @@ impl World {
             size: self.hero.1.size,
         };
 
-        for (position, enemy) in &self.enemies {
-            let p = PositionAndSize {
-                position: position.clone(),
-                size: enemy.size,
-            };
-
-            if h.collides_with(&p) || p.collides_with(&h) {
-                self.game_state = GameState::Dead;
-                return;
-            }
+        if collided_with(&h, &self.enemies) || collided_with(&h, &self.projectiles_without_direction()) {
+            self.game_state = GameState::Dead;
         }
     }
 
@@ -170,7 +160,6 @@ impl World {
             _ => false,
         }
     }
-    pub fn alive(&self) -> bool { !self.dead() }
 
     fn time_to_move_enemies_horizontally(&self) -> bool {
         self.last_enemy_horizontal_move.elapsed() >= self.config.move_enemies_horizontally_every
@@ -273,12 +262,20 @@ impl World {
         self.projectiles.insert(
             Point {
                 x: self.hero.0.x + (self.hero.1.size.width as f64 / 2.0) as i32,
-                y: self.hero.0.y,
+                y: self.hero.0.y - self.config.projectile_size.height as i32 - 2,
             },
-            projectile,
+            (projectile, Orientation::Up),
             );
 
         self.last_shot = Instant::now();
+    }
+
+    pub fn projectiles_without_direction(&self) -> HashMap<Point, Entity> {
+        let mut acc: HashMap<Point, Entity> = HashMap::new();
+        for (k, &(v, _)) in &self.projectiles {
+            acc.insert(k.clone(), v.clone());
+        }
+        acc
     }
 
     fn allowed_to_shoot(&self) -> bool {
@@ -286,16 +283,33 @@ impl World {
     }
 
     pub fn move_projectiles(&mut self) {
-        let mut new_positions: HashMap<Point, Entity> = default::default();
+        let mut new_positions: HashMap<Point, (Entity, Orientation)> = default::default();
 
-        for (point, projectile) in &self.projectiles {
+        for (point, &(projectile, orientation)) in &self.projectiles {
+            let delta = Point {
+                x: 0,
+                y: match orientation {
+                    Orientation::Up => -1 * self.config.projectile_speed as i32,
+                    Orientation::Down => self.config.projectile_speed as i32,
+                },
+            };
+
             new_positions.insert(
-                point.clone() + Point { x: 0, y: -1 * self.config.projectile_speed as i32 },
-                projectile.clone()
+                point.clone() + delta,
+                (projectile.clone(), orientation)
                 );
         }
 
         self.projectiles = new_positions;
+    }
+
+    pub fn enemy_shoot(&mut self) {
+        if !self.time_for_enemy_to_shoot() { return };
+        self.last_enemy_shot = Instant::now();
+    }
+
+    fn time_for_enemy_to_shoot(&self) -> bool {
+        self.last_enemy_shot.elapsed() >= self.config.enemy_shoots_every
     }
 
     pub fn check_for_projectile_enemy_collisions(&mut self) {
@@ -310,7 +324,7 @@ impl World {
 
             for (enemy_point, enemy) in &self.enemies {
                 let projectile_space = PositionAndSize {
-                    size: projectile.size,
+                    size: projectile.0.size,
                     position: projectile_point.clone(),
                 };
                 let enemy_space = PositionAndSize {
@@ -333,7 +347,7 @@ impl World {
         }
     }
 
-    fn killed_enemy_at(&mut self, point: &Point) {
+    fn killed_enemy_at(&mut self, _point: &Point) {
         self.score = self.score + self.config.points_for_killing_enemy;
     }
 
@@ -342,4 +356,19 @@ impl World {
             self.game_state = GameState::Won;
         }
     }
+}
+
+fn collided_with(h: &PositionAndSize, entities: &HashMap<Point, Entity>) -> bool {
+    for (position, enemy) in entities {
+        let p = PositionAndSize {
+            position: position.clone(),
+            size: enemy.size,
+        };
+
+        if h.collides_with(&p) || p.collides_with(&h) {
+            return true;
+        }
+    }
+
+    false
 }

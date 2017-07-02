@@ -1,8 +1,5 @@
 use size::*;
-use max_min::*;
-use entity::*;
 use point::*;
-use color::*;
 
 pub struct GridDistribution {
     pub available_space: Size,
@@ -14,10 +11,6 @@ pub struct GridDistribution {
 impl GridDistribution
 {
     pub fn distribute(&self) -> Vec<Point> {
-        /*
-         * how many per row?
-         */
-
         let count_horizontally = self.how_many_to_fill_space(
             self.entity_size.width,
             self.horizontal_padding,
@@ -35,8 +28,8 @@ impl GridDistribution
         let mut space_used_vertically = 0;
         let mut space_used_horizontally = 0;
 
-        for row in 0..count_vertically {
-            for col in 0..count_horizontally {
+        for _row in 0..count_vertically {
+            for _col in 0..count_horizontally {
                 let point = Point {
                     x: space_used_horizontally as i32,
                     y: space_used_vertically as i32,

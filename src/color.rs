@@ -35,7 +35,7 @@ impl Color {
         Color { red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0 }
     }
 
-    pub fn blue() -> Color {
-        Color { red: 0.0, green: 0.0, blue: 1.0, alpha: 1.0 }
-    }
+    // pub fn blue() -> Color {
+    //     Color { red: 0.0, green: 0.0, blue: 1.0, alpha: 1.0 }
+    // }
 }

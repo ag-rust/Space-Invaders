@@ -1,12 +1,9 @@
-use entity::Entity;
 use size::Size;
 use utils::*;
 use opengl_graphics::glyph_cache::GlyphCache;
 use color::Color;
-use point::*;
 use graphics::*;
 use drawing::{Drawable};
-use app::{FrameRate};
 use opengl_graphics::{GlGraphics};
 
 pub struct IntroText {

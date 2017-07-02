@@ -1,13 +1,10 @@
 use default::*;
 use std::ops::Add;
 use drawing::*;
-use entity::Entity;
 use size::Size;
 use opengl_graphics::glyph_cache::GlyphCache;
 use color::Color;
-use point::*;
 use graphics::*;
-use app::{FrameRate};
 use opengl_graphics::{GlGraphics};
 
 #[derive(Copy, Clone)]

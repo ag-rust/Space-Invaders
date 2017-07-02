@@ -19,3 +19,9 @@ impl Default for Direction {
         Direction::Right
     }
 }
+
+#[derive(Copy, Clone)]
+pub enum Orientation {
+    Up,
+    Down,
+}

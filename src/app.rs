@@ -1,13 +1,9 @@
 use graphics::*;
 use game_state::*;
 use world::*;
-use color::*;
 use opengl_graphics::{GlGraphics};
 use piston::input::*;
-use std::sync::Arc;
-use entity::Entity;
 use drawing::Drawable;
-use point::Point;
 use intro_text::*;
 use opengl_graphics::glyph_cache::GlyphCache;
 
@@ -26,7 +22,7 @@ impl<'a> App<'a> {
         let fps = self.fps();
         let mut glyph_cache = &mut self.glyph_cache;
         let enemies = &self.world.enemies;
-        let projectiles = &self.world.projectiles;
+        let projectiles = &self.world.projectiles_without_direction();
 
         self.gl.draw(args.viewport(), |c, gl| {
             clear(world.config.world_background_color.to_array(), gl);
@@ -83,13 +79,14 @@ impl<'a> App<'a> {
         }
     }
 
-    pub fn update(&mut self, args: &UpdateArgs) {
+    pub fn update(&mut self, _args: &UpdateArgs) {
         match self.world.game_state {
             GameState::Intro => {},
             GameState::Playing => {
                 self.world.check_for_out_of_bounds_enemies();
                 self.world.move_enemies();
                 self.world.move_projectiles();
+                self.world.enemy_shoot();
                 self.world.check_for_projectile_enemy_collisions();
                 self.world.check_if_won();
                 self.world.check_if_still_alive();
@@ -100,15 +97,15 @@ impl<'a> App<'a> {
         }
     }
 
-    pub fn move_it(&mut self, args: &Motion) {}
-    pub fn after_render(&mut self, args: &AfterRenderArgs) {}
-    pub fn close(&mut self, args: &CloseArgs) {}
-    pub fn cursor(&mut self, args: &bool) {}
-    pub fn focus(&mut self, args: &bool) {}
-    pub fn idle(&mut self, args: &IdleArgs) {}
-    pub fn release(&mut self, args: &Button) {}
-    pub fn resize(&mut self, foo: &u32, bar: &u32) {}
-    pub fn text(&mut self, args: &String) {}
+    pub fn move_it(&mut self, _args: &Motion) {}
+    pub fn after_render(&mut self, _args: &AfterRenderArgs) {}
+    pub fn close(&mut self, _args: &CloseArgs) {}
+    pub fn cursor(&mut self, _args: &bool) {}
+    pub fn focus(&mut self, _args: &bool) {}
+    pub fn idle(&mut self, _args: &IdleArgs) {}
+    pub fn release(&mut self, _args: &Button) {}
+    pub fn resize(&mut self, _foo: &u32, _ar: &u32) {}
+    pub fn text(&mut self, _args: &String) {}
 
     // NOTE: Input::Custom is not handled
 

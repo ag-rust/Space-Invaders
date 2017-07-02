@@ -8,13 +8,13 @@ use app::{FrameRate};
 use opengl_graphics::{GlGraphics};
 
 pub trait Drawable {
-    fn draw_shape(&self, window_size: Size, context: &Context, gl: &mut GlGraphics) {}
+    fn draw_shape(&self, _window_size: Size, _context: &Context, _gl: &mut GlGraphics) {}
 
-    fn draw_text(&self, window_size: Size, glyph_cache: &mut GlyphCache, context: &Context, gl: &mut GlGraphics) {}
+    fn draw_text(&self, _window_size: Size, _glyph_cache: &mut GlyphCache, _context: &Context, _gl: &mut GlGraphics) {}
 }
 
 impl Drawable for (Point, Entity) {
-    fn draw_shape(&self, window_size: Size, context: &Context, gl: &mut GlGraphics) {
+    fn draw_shape(&self, _window_size: Size, context: &Context, gl: &mut GlGraphics) {
         let width = self.1.size.width as f64;
         let height = self.1.size.height as f64;
         let rect = rectangle::centered([0.0, 0.0, width/2.0, height/2.0]);

@@ -21,7 +21,6 @@ mod size;
 mod utils;
 mod world;
 
-use color::*;
 use app::*;
 use config::*;
 use glutin_window::GlutinWindow as Window;
@@ -29,16 +28,14 @@ use opengl_graphics::{ GlGraphics, OpenGL };
 use piston::event_loop::*;
 use piston::input::*;
 use piston::window::WindowSettings;
-use std::collections::HashMap;
 use opengl_graphics::glyph_cache::GlyphCache;
 use world::*;
-use size::*;
 use std::path::Path;
 
 fn main() {
     let config = Config::default();
 
-    let mut world = World::new(config);
+    let world = World::new(config);
 
     let opengl = OpenGL::V3_2;
 
