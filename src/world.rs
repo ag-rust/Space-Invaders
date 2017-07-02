@@ -84,8 +84,8 @@ impl World {
         let distribution = GridDistribution {
             available_space: self.config.enemy_grid_size,
             entity_size: self.config.enemy_size,
-            horizontal_padding: 10,
-            vertical_padding: 10,
+            horizontal_padding: self.config.enemy_horizontal_padding,
+            vertical_padding: self.config.enemy_vertical_padding,
         }.distribute();
 
         for point in distribution {

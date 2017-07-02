@@ -11,6 +11,8 @@ pub struct Config {
     pub enemy_horizontal_speed: u32,
     pub enemy_vertical_speed: u32,
     pub enemy_grid_size: Size,
+    pub enemy_horizontal_padding: u32,
+    pub enemy_vertical_padding: u32,
     pub move_enemies_horizontally_every: Duration,
     pub move_enemies_vertically_every: Duration,
     pub time_between_shots: Duration,
@@ -33,10 +35,12 @@ pub struct Config {
 impl Config {
     pub fn default() -> Config {
         let mut c = Config {
-            enemy_size: Size { height: 13, width: 13 },
+            enemy_size: Size { height: 20, width: 20 },
             enemy_color: Color::red(),
             enemy_horizontal_speed: 1,
             enemy_vertical_speed: 1,
+            enemy_horizontal_padding: 15,
+            enemy_vertical_padding: 15,
             move_enemies_horizontally_every: Duration::from_millis(10),
             move_enemies_vertically_every: Duration::from_millis(300),
             time_between_shots: Duration::from_millis(250),
@@ -46,8 +50,8 @@ impl Config {
             hero_color: Color::green(),
             number_of_enemies: 10,
             starting_safe_zone_around_hero_size: 20,
-            world_size: Size { height: 300, width: 300 },
-            enemy_grid_size: Size { height: 100, width: 200 },
+            world_size: Size { height: 320, width: 570 },
+            enemy_grid_size: Size { height: 100, width: 300 },
             vertical_movement_allowed: false,
             horizontal_movement_allowed: true,
             world_background_color: Color::black(),
