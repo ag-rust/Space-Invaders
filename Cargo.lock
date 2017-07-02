@@ -1,5 +1,5 @@
 [root]
-name = "asteroids"
+name = "space_invaders"
 version = "0.1.0"
 dependencies = [
  "piston 0.32.0 (registry+https://github.com/rust-lang/crates.io-index)",

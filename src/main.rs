@@ -43,7 +43,7 @@ fn main() {
     let glyph_cache = GlyphCache::new(font_path).unwrap();
 
     let mut window: Window = WindowSettings::new(
-            "Asteroids",
+            "Space Invaders",
             [world.config.world_size.width, world.config.world_size.height]
         )
         .opengl(opengl)
