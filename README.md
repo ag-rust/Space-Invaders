@@ -6,7 +6,6 @@ The end goal:
 
 ## TODO
 
-- Move enemies down and sideways every second
 - Scoring system
     - When you win, add to score depending on how quick you were
       - Track when the game started and delta between now and then
