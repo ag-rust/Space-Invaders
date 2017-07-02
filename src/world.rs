@@ -5,12 +5,14 @@ use color::Color;
 use size::Size;
 use entity::*;
 use max_min::*;
+use std::time::Duration;
 use point::*;
 use config::*;
 use score::*;
 use rand::*;
 use game_state::*;
 use grid_distribution::*;
+use direction::*;
 use default;
 use std::time::{Instant};
 use rand::distributions::{IndependentSample, Range};
@@ -20,10 +22,15 @@ pub struct World {
     pub enemies: HashMap<Point, Entity>,
     pub projectiles: HashMap<Point, Entity>,
     pub start_time: Instant,
+    pub last_enemy_vertical_move: Instant,
+    pub last_enemy_horizontal_move: Instant,
+    pub last_shot: Instant,
     pub rng: ThreadRng,
     pub config: Config,
     pub score: Score,
     pub game_state: GameState,
+    pub enemy_horizontal_direction: Direction,
+    world_space: PositionAndSize,
 }
 
 // Initialization
@@ -39,10 +46,18 @@ impl World {
             enemies: default::default(),
             projectiles: default::default(),
             start_time: Instant::now(),
+            last_enemy_horizontal_move: Instant::now(),
+            last_enemy_vertical_move: Instant::now(),
+            last_shot: Instant::now(),
             rng: rand::thread_rng(),
+            world_space: PositionAndSize {
+                size: config.world_size.clone(),
+                position: Point::zero(),
+            },
             config: config,
             score: default::default(),
             game_state: default::default(),
+            enemy_horizontal_direction: default::default(),
         };
 
         world
@@ -63,12 +78,11 @@ impl World {
     }
 
     pub fn populate_with_enemies(&mut self) {
-        let grid_size = self.config.world_size - Size { height: 200, width: 40 };
-        let remaining_space = self.config.world_size.width - grid_size.width;
+        let remaining_space = self.config.world_size.width - self.config.enemy_grid_size.width;
         let padding_on_sides_of_grid = (remaining_space as f64 / 2.0) as i32;
 
         let distribution = GridDistribution {
-            available_space: grid_size,
+            available_space: self.config.enemy_grid_size,
             entity_size: self.config.enemy_size,
             horizontal_padding: 10,
             vertical_padding: 10,
@@ -158,13 +172,99 @@ impl World {
     }
     pub fn alive(&self) -> bool { !self.dead() }
 
+    fn time_to_move_enemies_horizontally(&self) -> bool {
+        self.last_enemy_horizontal_move.elapsed() >= self.config.move_enemies_horizontally_every
+    }
+
+    fn time_to_move_enemies_vertically(&self) -> bool {
+        self.last_enemy_vertical_move.elapsed() >= self.config.move_enemies_vertically_every
+    }
+
     pub fn move_enemies(&mut self) {
+        self.move_enemies_vertically();
+        self.move_enemies_horizontally();
+    }
+
+    fn move_enemies_vertically(&mut self) {
+        if !self.time_to_move_enemies_vertically() { return }
+
+        let mut new_positions: HashMap<Point, Entity> = default::default();
+
+        for (point, enemy) in &self.enemies {
+            let delta = Point {
+                x: 0,
+                y: self.config.enemy_vertical_speed as i32,
+            };
+
+            new_positions.insert(
+                point.clone() + delta,
+                enemy.clone(),
+                );
+        }
+
+        self.enemies = new_positions;
+        self.last_enemy_vertical_move = Instant::now()
+    }
+
+    fn move_enemies_horizontally(&mut self) {
+        if !self.time_to_move_enemies_horizontally() { return }
+
+        let mut new_positions: HashMap<Point, Entity> = default::default();
+
+        for (point, enemy) in &self.enemies {
+            let delta = Point {
+                x: match self.enemy_horizontal_direction {
+                    Direction::Right => {
+                        self.config.enemy_horizontal_speed as i32
+                    },
+                    Direction::Left => {
+                        -1 * self.config.enemy_horizontal_speed as i32
+                    },
+                },
+                y: 0,
+            };
+
+            new_positions.insert(
+                point.clone() + delta,
+                enemy.clone(),
+                );
+        }
+
+        self.enemies = new_positions;
+        self.last_enemy_horizontal_move = Instant::now()
+    }
+
+    pub fn check_for_out_of_bounds_enemies(&mut self) {
+        let any_out_of_bounds = self.enemies.iter().any(|(p, e)| {
+            let pos_size = PositionAndSize {
+                position: p.clone(),
+                size: e.size,
+            };
+            !pos_size.fully_contained_in(&self.world_space)
+        });
+
+        if any_out_of_bounds {
+            self.enemy_horizontal_direction = self.enemy_horizontal_direction.flip();
+            self.last_enemy_horizontal_move = Instant::now() - self.config.move_enemies_horizontally_every;
+        }
+    }
+
+    pub fn check_if_enemy_at_bottom(&mut self) {
+        let any_reached_bottom = self.enemies.iter().any(|(p, e)| {
+            p.y + e.size.height as i32 >= self.config.world_size.height as i32
+        });
+
+        if any_reached_bottom {
+            self.game_state = GameState::Dead;
+        }
     }
 }
 
 // Shooting projectiles
 impl World {
     pub fn shoot(&mut self) {
+        if !self.allowed_to_shoot() { return }
+
         let projectile = Entity {
             size: self.config.projectile_size,
             color: self.config.projectile_color,
@@ -177,6 +277,12 @@ impl World {
             },
             projectile,
             );
+
+        self.last_shot = Instant::now();
+    }
+
+    fn allowed_to_shoot(&self) -> bool {
+        self.last_shot.elapsed() >= self.config.time_between_shots
     }
 
     pub fn move_projectiles(&mut self) {

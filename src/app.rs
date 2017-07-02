@@ -87,11 +87,13 @@ impl<'a> App<'a> {
         match self.world.game_state {
             GameState::Intro => {},
             GameState::Playing => {
+                self.world.check_for_out_of_bounds_enemies();
                 self.world.move_enemies();
                 self.world.move_projectiles();
                 self.world.check_for_projectile_enemy_collisions();
                 self.world.check_if_won();
                 self.world.check_if_still_alive();
+                self.world.check_if_enemy_at_bottom();
             },
             GameState::Dead => {},
             GameState::Won => {},
